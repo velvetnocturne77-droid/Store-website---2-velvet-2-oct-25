@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Velvet Nocturne</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400;600&display=swap" rel="stylesheet">
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              'brand-gold': '#D4AF37',
+              'brand-dark': '#111111',
+              'brand-deep': '#2F4F4F',
+            },
+            fontFamily: {
+              'serif': ['Playfair Display', 'serif'],
+              'sans': ['Montserrat', 'sans-serif'],
+            },
+          },
+        },
+      }
+    </script>
+    <style>
+      body {
+        font-family: 'Montserrat', sans-serif;
+        background-color: #000000;
+        color: #FFFFFF;
+      }
+      h1, h2, h3, h4, h5, h6 {
+        font-family: 'Playfair Display', serif;
+      }
+      .fade-in {
+        animation: fadeIn 1s ease-in-out;
+      }
+      @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+      }
+      .ken-burns {
+        animation: kenburns 20s ease-out infinite;
+      }
+      @keyframes kenburns {
+        0% {
+          transform: scale(1.05);
+        }
+        100% {
+          transform: scale(1.15);
+        }
+      }
+      .title-underline::after {
+        content: '';
+        display: block;
+        width: 80px;
+        height: 2px;
+        background-color: #D4AF37;
+        margin: 1rem auto 0;
+      }
+      .fly-animation {
+        animation: flyToCart 1s ease-in-out forwards;
+      }
+      @keyframes flyToCart {
+        0% {
+          opacity: 1;
+          transform: translate(var(--start-x), var(--start-y)) scale(0.5);
+        }
+        20% {
+          transform: translate(calc(var(--start-x) + (var(--end-x) - var(--start-x)) * 0.2), calc(var(--start-y) + (var(--end-y) - var(--start-y)) * 0.2 - 50px)) scale(1);
+        }
+        100% {
+          opacity: 0;
+          transform: translate(var(--end-x), var(--end-y)) scale(0);
+        }
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react": "https://esm.sh/react@18.2.0",
+    "react-dom/client": "https://esm.sh/react-dom@18.2.0/client",
+    "react-router-dom": "https://esm.sh/react-router-dom@6.22.3",
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>

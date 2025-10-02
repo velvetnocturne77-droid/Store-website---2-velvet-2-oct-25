@@ -1,0 +1,5 @@
+{
+  "name": "Velvet Nocturne",
+  "description": "A luxury e-commerce website for a high-end perfume brand. It features a product catalog, shopping cart, wishlist, and a simulated checkout process, with all data managed on the client-side using localStorage.",
+  "requestFramePermissions": []
+}
