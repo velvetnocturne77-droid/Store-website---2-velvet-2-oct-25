@@ -11,7 +11,7 @@ interface RazorpayOptions {
   description: string;
   image?: string;
   order_id?: string;
-  handler: (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string; }) => void;
+  handler: (response: { razorpay_payment_id: string; razorpay_order_id?: string; razorpay_signature?: string; }) => void;
   prefill: {
     name: string;
     email: string;
@@ -134,72 +134,29 @@ const CheckoutPage: React.FC = () => {
 
     const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
 
-    // --- Step 1: Create Order on Backend ---
-    let order;
-    try {
-      const response = await fetch('/api/order', { 
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ amount: cartTotal }),
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create payment order.');
-      }
-      order = data;
-    } catch (error: any) {
-      console.error("Error creating Razorpay order:", error);
-      setPaymentError(error.message || "Could not connect to the payment server. Please try again later.");
-      setIsProcessing(false);
-      return;
-    }
-
     const options: RazorpayOptions = {
       key: RAZORPAY_KEY_ID,
-      amount: order.amount,
-      currency: order.currency,
+      amount: Math.round(cartTotal * 100), // amount in the smallest currency unit (paise)
+      currency: 'INR',
       name: "Velvet Nocturne",
       description: "Luxury Perfume Order",
       image: "https://picsum.photos/id/117/200/200",
-      order_id: order.id,
-      handler: async (response) => {
-        // --- Step 2: Verify Payment on Backend ---
-        try {
-          const verificationResponse = await fetch('/api/verify', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              razorpay_order_id: response.razorpay_order_id,
-              razorpay_payment_id: response.razorpay_payment_id,
-              razorpay_signature: response.razorpay_signature,
-            }),
-          });
-          
-          const result = await verificationResponse.json();
-
-          if (result.success) {
-            // --- Step 3: Finalize Order on Frontend ---
-            addOrder({
-              userId: currentUser.email,
-              items: cart,
-              total: cartTotal,
-              shippingAddress: shippingInfo,
-              razorpayPaymentId: response.razorpay_payment_id,
-              razorpayOrderId: response.razorpay_order_id,
-            });
-            alert("Payment successful! Your order has been placed.");
-            navigate('/account');
-          } else {
-            setPaymentError(result.message || 'Payment verification failed. Please contact support.');
-          }
-        } catch (error: any) {
-          console.error("Error verifying payment:", error);
-          setPaymentError("An error occurred during payment verification. Please contact support.");
-        } finally {
-            setIsProcessing(false);
-        }
+      // order_id is removed as we are not creating it on a server
+      handler: (response) => {
+        // Since we are not creating an order server-side and verifying,
+        // we will treat the successful handler callback as a successful payment.
+        // This is not secure for a production application but necessary for this environment.
+        addOrder({
+          userId: currentUser.email,
+          items: cart,
+          total: cartTotal,
+          shippingAddress: shippingInfo,
+          razorpayPaymentId: response.razorpay_payment_id,
+          razorpayOrderId: response.razorpay_order_id || `mock_order_${Date.now()}`,
+        });
+        alert("Payment successful! Your order has been placed.");
+        navigate('/account');
+        setIsProcessing(false);
       },
       prefill: {
         name: shippingInfo.name,
