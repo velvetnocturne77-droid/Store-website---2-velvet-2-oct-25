@@ -132,13 +132,7 @@ const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
     setPaymentError('');
 
-    const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
-
-    if (!RAZORPAY_KEY_ID) {
-      setPaymentError("Razorpay Key ID is not configured. Please contact support.");
-      setIsProcessing(false);
-      return;
-    }
+    const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
 
     // --- Step 1: Create Order on Backend ---
     let order;
