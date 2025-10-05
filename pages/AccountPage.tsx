@@ -127,7 +127,8 @@ const AccountPage: React.FC = () => {
                             <div>
                                 <p className="font-semibold">Order ID: <span className="text-gray-300">{order.id}</span></p>
                                 <p className="text-sm text-gray-400">Date: {new Date(order.date).toLocaleDateString()}</p>
-                                {order.paymentId && <p className="text-xs text-gray-500" title={order.paymentId}>Payment ID: {order.paymentId}</p>}
+                                {order.razorpayOrderId && <p className="text-xs text-gray-500" title={order.razorpayOrderId}>Rzp Order ID: {order.razorpayOrderId}</p>}
+                                {order.razorpayPaymentId && <p className="text-xs text-gray-500" title={order.razorpayPaymentId}>Rzp Payment ID: {order.razorpayPaymentId}</p>}
                             </div>
                             <div className="text-right">
                                 <p className="text-lg font-bold text-brand-gold">₹{order.totalValue.toFixed(2)}</p>

@@ -10,7 +10,8 @@ interface RazorpayOptions {
   name: string;
   description: string;
   image?: string;
-  handler: (response: { razorpay_payment_id: string }) => void;
+  order_id?: string;
+  handler: (response: { razorpay_payment_id: string; razorpay_order_id: string; razorpay_signature: string; }) => void;
   prefill: {
     name: string;
     email: string;
@@ -57,6 +58,8 @@ const CheckoutPage: React.FC = () => {
   const { cart, cartTotal, currentUser, addOrder } = useStore();
   const navigate = useNavigate();
   const [step, setStep] = useState(1);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [paymentError, setPaymentError] = useState('');
   
   const [useSavedAddress, setUseSavedAddress] = useState(!!currentUser?.shippingAddress);
   const [shippingInfo, setShippingInfo] = useState({
@@ -120,29 +123,89 @@ const CheckoutPage: React.FC = () => {
     setShippingInfo(prev => ({ ...prev, [name]: value }));
   };
 
-  const displayRazorpay = () => {
+  const displayRazorpay = async () => {
     if (!currentUser) {
       alert("Please log in to place an order.");
       return;
     }
+    
+    setIsProcessing(true);
+    setPaymentError('');
+
+    const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID;
+
+    if (!RAZORPAY_KEY_ID) {
+      setPaymentError("Razorpay Key ID is not configured. Please contact support.");
+      setIsProcessing(false);
+      return;
+    }
+
+    // --- Step 1: Create Order on Backend ---
+    let order;
+    try {
+      const response = await fetch('/api/order', { 
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: cartTotal }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create payment order.');
+      }
+      order = data;
+    } catch (error: any) {
+      console.error("Error creating Razorpay order:", error);
+      setPaymentError(error.message || "Could not connect to the payment server. Please try again later.");
+      setIsProcessing(false);
+      return;
+    }
 
     const options: RazorpayOptions = {
-      key: 'rzp_test_ILz21sBCxfb86h', // IMPORTANT: Replace with your actual Razorpay Key ID
-      amount: cartTotal * 100, // Amount is in currency subunits. 100 paise = 1 INR
-      currency: "INR",
+      key: RAZORPAY_KEY_ID,
+      amount: order.amount,
+      currency: order.currency,
       name: "Velvet Nocturne",
       description: "Luxury Perfume Order",
-      image: "https://picsum.photos/id/117/200/200", // Your logo URL
-      handler: (response) => {
-        addOrder({
-          userId: currentUser.email,
-          items: cart,
-          total: cartTotal,
-          shippingAddress: shippingInfo,
-          paymentId: response.razorpay_payment_id
-        });
-        alert("Payment successful! Your order has been placed.");
-        navigate('/account');
+      image: "https://picsum.photos/id/117/200/200",
+      order_id: order.id,
+      handler: async (response) => {
+        // --- Step 2: Verify Payment on Backend ---
+        try {
+          const verificationResponse = await fetch('/api/verify', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              razorpay_order_id: response.razorpay_order_id,
+              razorpay_payment_id: response.razorpay_payment_id,
+              razorpay_signature: response.razorpay_signature,
+            }),
+          });
+          
+          const result = await verificationResponse.json();
+
+          if (result.success) {
+            // --- Step 3: Finalize Order on Frontend ---
+            addOrder({
+              userId: currentUser.email,
+              items: cart,
+              total: cartTotal,
+              shippingAddress: shippingInfo,
+              razorpayPaymentId: response.razorpay_payment_id,
+              razorpayOrderId: response.razorpay_order_id,
+            });
+            alert("Payment successful! Your order has been placed.");
+            navigate('/account');
+          } else {
+            setPaymentError(result.message || 'Payment verification failed. Please contact support.');
+          }
+        } catch (error: any) {
+          console.error("Error verifying payment:", error);
+          setPaymentError("An error occurred during payment verification. Please contact support.");
+        } finally {
+            setIsProcessing(false);
+        }
       },
       prefill: {
         name: shippingInfo.name,
@@ -158,14 +221,16 @@ const CheckoutPage: React.FC = () => {
     };
     
     if (typeof window.Razorpay === 'undefined') {
-        alert('Razorpay SDK not loaded. Please check your internet connection.');
+        setPaymentError('Razorpay SDK not loaded. Please check your internet connection.');
+        setIsProcessing(false);
         return;
     }
 
     const paymentObject = new window.Razorpay(options);
     paymentObject.on('payment.failed', (response: any) => {
-        alert('Payment failed. Please try again.');
-        console.error('Payment failed: ', response.error.description);
+        setPaymentError(response.error.description || 'Payment failed. Please try again.');
+        console.error('Payment failed: ', response.error);
+        setIsProcessing(false);
     });
     paymentObject.open();
   }
@@ -256,10 +321,15 @@ const CheckoutPage: React.FC = () => {
                       <span className="text-brand-gold">₹{cartTotal.toFixed(2)}</span>
                   </div>
               </div>
-              <button type="submit" className="w-full bg-brand-gold text-black py-3 font-bold uppercase tracking-widest transition-opacity hover:opacity-90">
-                Pay with Razorpay
+              {paymentError && <p className="text-red-500 text-center mb-4">{paymentError}</p>}
+              <button 
+                type="submit" 
+                className="w-full bg-brand-gold text-black py-3 font-bold uppercase tracking-widest transition-opacity hover:opacity-90 disabled:opacity-50 disabled:cursor-wait"
+                disabled={isProcessing}
+              >
+                {isProcessing ? 'Processing...' : 'Pay with Razorpay'}
               </button>
-              <button onClick={() => setStep(1)} type="button" className="mt-4 w-full text-center text-gray-400 hover:text-white">
+              <button onClick={() => setStep(1)} type="button" className="mt-4 w-full text-center text-gray-400 hover:text-white disabled:opacity-50" disabled={isProcessing}>
                 Back to Shipping
               </button>
             </div>

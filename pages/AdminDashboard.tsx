@@ -198,10 +198,10 @@ const AdminDashboard: React.FC = () => {
 
   const handleExportCSV = () => {
     if (allOrders.length === 0) { alert("No orders to export."); return; }
-    const headers = ["Order ID", "Payment ID", "Date", "Customer Name", "Customer Email", "Customer Phone", "Total Value", "Amount Paid", "Status", "Shipping Address", "Items"];
+    const headers = ["Order ID", "Razorpay Order ID", "Razorpay Payment ID", "Date", "Customer Name", "Customer Email", "Customer Phone", "Total Value", "Amount Paid", "Status", "Shipping Address", "Items"];
     const formatCsvField = (f: any): string => `"${String(f).replace(/"/g, '""')}"`;
     const rows = allOrders.map(o => [
-      o.id, o.paymentId || 'N/A', new Date(o.date).toLocaleString(), o.shippingAddress.name, o.userId, o.shippingAddress.phone, o.totalValue.toFixed(2), o.amountPaid.toFixed(2), o.status,
+      o.id, o.razorpayOrderId || 'N/A', o.razorpayPaymentId || 'N/A', new Date(o.date).toLocaleString(), o.shippingAddress.name, o.userId, o.shippingAddress.phone, o.totalValue.toFixed(2), o.amountPaid.toFixed(2), o.status,
       `${o.shippingAddress.address}, ${o.shippingAddress.city}, ${o.shippingAddress.zip}, ${o.shippingAddress.country}`,
       o.items.map(i => `${i.name} (${i.size}) x ${i.quantity}`).join(' | ')
     ].map(formatCsvField).join(','));
@@ -305,9 +305,9 @@ const AdminDashboard: React.FC = () => {
       {activeTab === 'orders' && (<>
           <div className="bg-brand-dark p-2 border border-gray-800 rounded-lg overflow-x-auto">
               <table className="w-full text-left min-w-[1200px]">
-                  <thead><tr className="border-b border-gray-700"><th className="p-4">Order ID</th><th className="p-4">Date</th><th className="p-4">Customer</th><th className="p-4">Payment</th><th className="p-4">Address</th><th className="p-4">Items</th><th className="p-4">Status</th></tr></thead>
+                  <thead><tr className="border-b border-gray-700"><th className="p-4">Order Details</th><th className="p-4">Date</th><th className="p-4">Customer</th><th className="p-4">Payment</th><th className="p-4">Address</th><th className="p-4">Items</th><th className="p-4">Status</th></tr></thead>
                   <tbody>{allOrders.map(o => (<tr key={o.id} className="border-b border-gray-800 hover:bg-gray-800/50">
-                    <td className="p-4 font-mono text-sm align-top">{o.id}{o.paymentId && <span className="block text-gray-500 text-xs mt-1 truncate" title={o.paymentId}>Pay ID: {o.paymentId}</span>}</td><td className="p-4 text-sm align-top">{new Date(o.date).toLocaleDateString()}</td>
+                    <td className="p-4 font-mono text-sm align-top">{o.id}<br/>{o.razorpayOrderId && <span className="block text-gray-500 text-xs mt-1 truncate" title={o.razorpayOrderId}>Rzp Order: {o.razorpayOrderId}</span>}{o.razorpayPaymentId && <span className="block text-gray-500 text-xs mt-1 truncate" title={o.razorpayPaymentId}>Rzp Pay: {o.razorpayPaymentId}</span>}</td><td className="p-4 text-sm align-top">{new Date(o.date).toLocaleDateString()}</td>
                     <td className="p-4 text-sm align-top"><p className="font-semibold">{o.shippingAddress.name}</p><p className="text-gray-400">{o.userId}</p><p className="text-gray-400">{o.shippingAddress.phone}</p></td>
                     <td className="p-4 align-top"><p className="font-bold text-brand-gold">₹{o.totalValue.toFixed(2)}</p><p className="text-sm text-gray-300">Paid: ₹{o.amountPaid.toFixed(2)}</p></td>
                     <td className="p-4 text-xs text-gray-400 align-top">{o.shippingAddress.address},<br/>{o.shippingAddress.city}, {o.shippingAddress.zip},<br/>{o.shippingAddress.country}</td>

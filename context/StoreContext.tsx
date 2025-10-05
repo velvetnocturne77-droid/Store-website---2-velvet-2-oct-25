@@ -20,7 +20,7 @@ interface StoreContextType {
   logout: () => void;
   register: (user: User) => boolean;
   orders: Order[];
-  addOrder: (order: Omit<Order, 'id' | 'date' | 'status' | 'totalValue' | 'amountPaid'> & { total: number; paymentId: string; }) => void;
+  addOrder: (orderData: { userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => void;
   updateUserAddress: (address: ShippingAddress) => void;
 }
 
@@ -142,7 +142,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return true;
   };
 
-  const addOrder = (orderData: { userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; paymentId: string; }) => {
+  const addOrder = (orderData: { userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => {
     const allOrders = storage.getOrders();
     
     const totalValue = orderData.items.reduce((sum, item) => {
@@ -161,7 +161,8 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       shippingAddress: orderData.shippingAddress,
       totalValue,
       amountPaid,
-      paymentId: orderData.paymentId,
+      razorpayPaymentId: orderData.razorpayPaymentId,
+      razorpayOrderId: orderData.razorpayOrderId,
     };
 
     const updatedOrders = [...allOrders, newOrder];
