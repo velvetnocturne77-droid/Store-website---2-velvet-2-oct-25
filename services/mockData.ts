@@ -20,7 +20,7 @@ export const mockProducts: Product[] = [
     image: 'https://i.imgur.com/SdKKVft.png',
     variants: [
       { id: 'draven-2-100', size: '100ml', price: 3200, discountedPrice: 2399, stock: 5 },
-      { id: 'draven-2-50', size: '50ml', price: 2300, discountedPrice: 1699, stock: 5 },
+      { id: 'draven-2-50', size: '50ml', price: 2300, discountedPrice: 16, stock: 5 },
     ]
   },
   { 
