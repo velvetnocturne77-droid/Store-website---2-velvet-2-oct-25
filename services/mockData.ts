@@ -17,7 +17,7 @@ export const mockProducts: Product[] = [
     id: 'draven-2', 
     name: '🖤 Draven – The Shadow of Elegance Signature Scent', 
     description: 'Draven is the memory of power, mystery, and allure. It recalls moments of strength — the echo of footsteps in silence, the warmth of a fire on a cold night, the magnetic presence that never goes unnoticed.\n\nThe fragrance strikes with sharp spice, deepens with smoky woods and leather, and rests in dark musks and oud. Every note is a memory of confidence and command.\n\n✨ Draven – Darkness never smelled this elegant.', 
-    image: 'https://i.imgur.com/yq5xV24.jpeg',
+    image: 'https://i.imgur.com/8Ag5ifX.jpeg',
     variants: [
       { id: 'draven-2-100', size: '100ml', price: 3200, discountedPrice: 2399, stock: 5 },
       { id: 'draven-2-50', size: '50ml', price: 2300, discountedPrice: 1699, stock: 5 },
