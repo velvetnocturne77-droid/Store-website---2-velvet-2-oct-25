@@ -156,6 +156,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
       id: Date.now().toString(),
       date: new Date().toISOString(),
       status: isPartiallyPaid ? 'Partially Paid' : 'Pending',
+      statusNotes: isPartiallyPaid ? undefined : 'Will be confirmed under 24 hours and shipped in 14 days. You will be notified through WhatsApp and Call',
       userId: orderData.userId,
       items: orderData.items,
       shippingAddress: orderData.shippingAddress,

@@ -56,6 +56,7 @@ export interface Order {
   date: string;
   shippingAddress: ShippingAddress;
   status: 'Pending' | 'Processing' | 'Shipped' | 'Delivered' | 'Partially Paid';
+  statusNotes?: string;
   razorpayPaymentId?: string;
   razorpayOrderId?: string;
 }

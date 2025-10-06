@@ -433,7 +433,14 @@ const AdminDashboard: React.FC = () => {
                     <td className="p-4 align-top"><p className="font-bold text-brand-gold">₹{o.totalValue.toFixed(2)}</p><p className="text-sm text-gray-300">Paid: ₹{o.amountPaid.toFixed(2)}</p></td>
                     <td className="p-4 text-xs text-gray-400 align-top">{o.shippingAddress.address},<br/>{o.shippingAddress.city}, {o.shippingAddress.zip},<br/>{o.shippingAddress.country}</td>
                     <td className="p-4 text-xs text-gray-400 align-top">{o.items.map(i => (<div key={i.variantId} className="whitespace-nowrap">{i.name} ({i.size}) x {i.quantity}</div>))}</td>
-                    <td className="p-4 align-top"><select value={o.status} onChange={(e) => handleOrderStatusChange(o.id, e.target.value as Order['status'])} className={`w-full p-2 rounded-md border text-sm ${getStatusColor(o.status)} border-gray-600 bg-gray-900`}><option value="Pending">Pending</option><option value="Partially Paid">Partially Paid</option><option value="Processing">Processing</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option></select></td>
+                    <td className="p-4 align-top">
+                      <select value={o.status} onChange={(e) => handleOrderStatusChange(o.id, e.target.value as Order['status'])} className={`w-full p-2 rounded-md border text-sm ${getStatusColor(o.status)} border-gray-600 bg-gray-900`}>
+                        <option value="Pending">Pending</option><option value="Partially Paid">Partially Paid</option><option value="Processing">Processing</option><option value="Shipped">Shipped</option><option value="Delivered">Delivered</option>
+                      </select>
+                      {o.statusNotes && o.status === 'Pending' && (
+                          <p className="text-xs text-gray-400 mt-2">{o.statusNotes}</p>
+                      )}
+                    </td>
                   </tr>))}</tbody>
               </table>
               {allOrders.length === 0 && (<p className="text-center p-8 text-gray-400">No orders found.</p>)}

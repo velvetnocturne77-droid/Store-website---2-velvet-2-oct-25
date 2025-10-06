@@ -130,6 +130,9 @@ const AccountPage: React.FC = () => {
                                 <span className={`mt-1 inline-block px-3 py-1 text-xs font-semibold rounded-full ${getStatusColor(order.status)}`}>
                                     {order.status}
                                 </span>
+                                {order.statusNotes && (
+                                  <p className="text-xs text-gray-400 mt-2 max-w-xs text-right ml-auto">{order.statusNotes}</p>
+                                )}
                             </div>
                         </div>
                         <div>
