@@ -1,6 +1,6 @@
 import { Product, BlogPost } from '../types';
 
-export const DATA_VERSION = 2;
+export const DATA_VERSION = 3;
 
 export const mockProducts: Product[] = [
   { 
