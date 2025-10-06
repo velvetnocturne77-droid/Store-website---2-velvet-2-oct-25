@@ -11,12 +11,10 @@ import CartPage from './pages/CartPage';
 import WishlistPage from './pages/WishlistPage';
 import CheckoutPage from './pages/CheckoutPage';
 import AccountPage from './pages/AccountPage';
-import AdminDashboard from './pages/AdminDashboard';
 import ContactPage from './pages/ContactPage';
 import BlogPage from './pages/BlogPage';
 import BlogPostPage from './pages/BlogPostPage';
 import NotFoundPage from './pages/NotFoundPage';
-import ProtectedRoute from './components/ProtectedRoute';
 import PolicyLinksPage from './pages/PolicyLinksPage';
 
 const App: React.FC = () => {
@@ -39,14 +37,6 @@ const App: React.FC = () => {
                 <Route path="/blog" element={<BlogPage />} />
                 <Route path="/blog/:id" element={<BlogPostPage />} />
                 <Route path="/policy-links" element={<PolicyLinksPage />} />
-                <Route 
-                  path="/admin" 
-                  element={
-                    <ProtectedRoute>
-                      <AdminDashboard />
-                    </ProtectedRoute>
-                  } 
-                />
                 <Route path="*" element={<NotFoundPage />} />
               </Routes>
             </main>

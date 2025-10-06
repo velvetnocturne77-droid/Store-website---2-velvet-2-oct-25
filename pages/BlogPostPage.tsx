@@ -25,10 +25,8 @@ const BlogPostPage: React.FC = () => {
       <h1 className="text-5xl font-serif text-brand-gold mb-4">{post.title}</h1>
       <p className="text-gray-400 mb-8">By {post.author} on {post.date}</p>
       
-      <div className="prose prose-invert prose-lg max-w-none text-gray-300">
-        <p>{post.content}</p>
-        <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.</p>
-        <p>Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.</p>
+      <div className="prose prose-invert prose-lg max-w-none text-gray-300 whitespace-pre-line">
+        {post.content}
       </div>
     </div>
   );

@@ -66,15 +66,6 @@ const AccountPage: React.FC = () => {
           </div>
         </div>
 
-        {currentUser.isAdmin && (
-            <div className="border-t border-gray-700 pt-6 mb-8">
-                <h3 className="text-2xl font-serif mb-4">Admin Controls</h3>
-                <Link to="/admin" className="inline-block bg-brand-gold text-black py-2 px-4 uppercase tracking-widest text-sm transition-all duration-300 hover:opacity-80 rounded-sm">
-                    Go to Admin Dashboard
-                </Link>
-            </div>
-        )}
-
         <div className="border-t border-gray-700 pt-6">
             <div className="flex justify-between items-center mb-4">
               <h3 className="text-2xl font-serif">Saved Shipping Address</h3>
