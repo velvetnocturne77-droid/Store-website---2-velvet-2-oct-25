@@ -7,7 +7,7 @@ export const mockProducts: Product[] = [
     id: 'velora-1', 
     name: '🌸 Velora – The Essence of Timeless Elegance Eau De Perfume', 
     description: 'Velora is the fragrance of memories wrapped in velvet whispers. It carries the grace of fleeting moments that stay forever etched in the heart — the laughter of a loved one, the touch of silk, the glow of a quiet evening.\n\nFloral blooms rise first, soft yet captivating, then melt into warm sensual notes before resting in a deep, lingering base. Velora is not just worn, it is remembered — like a memory that never fades.\n\n✨ Velora – Because elegance never shouts, it simply lingers.', 
-    image: 'https://i.imgur.com/qE6kL8w.jpeg', 
+    image: 'https://i.imgur.com/UMoqeBw.png', 
     variants: [
       { id: 'velora-1-100', size: '100ml', price: 3500, discountedPrice: 2599, stock: 0 },
       { id: 'velora-1-50', size: '50ml', price: 2400, discountedPrice: 1799, stock: 0 },
