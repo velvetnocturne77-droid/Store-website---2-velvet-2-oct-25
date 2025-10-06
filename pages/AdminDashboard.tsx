@@ -2,6 +2,49 @@ import React, { useState, useEffect } from 'react';
 import { useStore } from '../hooks/useStore';
 import * as storage from '../services/storageService';
 import { Product, Order, User, ProductVariant, BlogPost, ContactSubmission, NewsletterSubscription } from '../types';
+import Modal from '../components/Modal';
+
+// --- ExportDataModal Component ---
+interface ExportDataModalProps {
+  isOpen: boolean;
+  onClose: () => void;
+  title: string;
+  dataString: string;
+  instructions: string;
+}
+
+const ExportDataModal: React.FC<ExportDataModalProps> = ({ isOpen, onClose, title, dataString, instructions }) => {
+  const [isCopied, setIsCopied] = useState(false);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(dataString).then(() => {
+      setIsCopied(true);
+      setTimeout(() => setIsCopied(false), 2000);
+    });
+  };
+
+  if (!isOpen) return null;
+
+  return (
+    <Modal isOpen={isOpen} onClose={onClose}>
+      <h2 className="text-3xl font-serif text-brand-gold mb-4 text-center">{title}</h2>
+      <p className="text-gray-300 text-center mb-6">{instructions}</p>
+      <textarea
+        readOnly
+        value={dataString}
+        className="w-full h-64 bg-gray-900 border border-gray-600 focus:border-brand-gold outline-none p-3 text-white rounded font-mono text-sm"
+      />
+      <button
+        onClick={handleCopy}
+        className="w-full mt-4 bg-brand-gold text-black py-3 font-bold uppercase tracking-wider rounded transition-opacity hover:opacity-90"
+      >
+        {isCopied ? 'Copied!' : 'Copy to Clipboard'}
+      </button>
+    </Modal>
+  );
+};
+// --- End ExportDataModal Component ---
+
 
 type AdminTab = 'products' | 'orders' | 'customers' | 'blog' | 'contacts' | 'newsletter';
 
@@ -48,6 +91,9 @@ const AdminDashboard: React.FC = () => {
 
   const [isEditingBlog, setIsEditingBlog] = useState<BlogPost | null>(null);
   const [blogFormData, setBlogFormData] = useState<BlogPost>(emptyBlogForm);
+
+  const [exportModalOpen, setExportModalOpen] = useState(false);
+  const [exportData, setExportData] = useState({ title: '', dataString: '', instructions: '' });
 
   useEffect(() => {
     setProducts(storeProducts);
@@ -135,8 +181,18 @@ const AdminDashboard: React.FC = () => {
       };
       updatedProducts = [...products, newProduct];
     }
+    
     storage.saveProducts(updatedProducts);
     setStoreProducts(updatedProducts);
+
+    const dataStringForProducts = `export const mockProducts: Product[] = ${JSON.stringify(updatedProducts, null, 2)};`;
+    setExportData({
+        title: 'Update Products Data',
+        dataString: dataStringForProducts,
+        instructions: "To make these changes permanent for all users, copy the code below and replace the `mockProducts` variable in `services/mockData.ts`. Then, increment the `DATA_VERSION` in the same file.",
+    });
+    setExportModalOpen(true);
+
     setProductFormData(getNewEmptyProductForm());
     setIsEditingProduct(null);
   };
@@ -157,9 +213,18 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleProductDelete = (productId: string) => {
-    if (window.confirm('Are you sure?')) {
+    if (window.confirm('Are you sure you want to delete this product? This will generate an export to make the change permanent.')) {
       const updatedProducts = products.filter(p => p.id !== productId);
-      storage.saveProducts(updatedProducts); setStoreProducts(updatedProducts);
+      storage.saveProducts(updatedProducts); 
+      setStoreProducts(updatedProducts);
+
+      const dataStringForProducts = `export const mockProducts: Product[] = ${JSON.stringify(updatedProducts, null, 2)};`;
+      setExportData({
+          title: 'Update Products Data',
+          dataString: dataStringForProducts,
+          instructions: "To permanently delete the product for all users, copy the code below and replace the `mockProducts` variable in `services/mockData.ts`. Then, increment the `DATA_VERSION` in the same file.",
+      });
+      setExportModalOpen(true);
     }
   };
 
@@ -195,7 +260,17 @@ const AdminDashboard: React.FC = () => {
     } else {
       updatedPosts = [...blogPosts, { ...blogFormData, id: Date.now().toString(), date: new Date().toLocaleDateString() }];
     }
-    storage.saveBlogPosts(updatedPosts); setBlogPosts(updatedPosts);
+    storage.saveBlogPosts(updatedPosts); 
+    setBlogPosts(updatedPosts);
+    
+    const dataStringForBlog = `export const mockBlogPosts: BlogPost[] = ${JSON.stringify(updatedPosts, null, 2)};`;
+    setExportData({
+        title: 'Update Blog Posts Data',
+        dataString: dataStringForBlog,
+        instructions: "To make these changes permanent for all users, copy the code below and replace the `mockBlogPosts` variable in `services/mockData.ts`. Then, increment the `DATA_VERSION` in the same file.",
+    });
+    setExportModalOpen(true);
+
     setBlogFormData(emptyBlogForm); setIsEditingBlog(null);
   };
 
@@ -204,9 +279,18 @@ const AdminDashboard: React.FC = () => {
   };
 
   const handleBlogDelete = (postId: string) => {
-    if (window.confirm('Are you sure?')) {
+    if (window.confirm('Are you sure you want to delete this post? This will generate an export to make the change permanent.')) {
       const updatedPosts = blogPosts.filter(p => p.id !== postId);
-      storage.saveBlogPosts(updatedPosts); setBlogPosts(updatedPosts);
+      storage.saveBlogPosts(updatedPosts); 
+      setBlogPosts(updatedPosts);
+
+      const dataStringForBlog = `export const mockBlogPosts: BlogPost[] = ${JSON.stringify(updatedPosts, null, 2)};`;
+      setExportData({
+          title: 'Update Blog Posts Data',
+          dataString: dataStringForBlog,
+          instructions: "To permanently delete the post for all users, copy the code below and replace the `mockBlogPosts` variable in `services/mockData.ts`. Then, increment the `DATA_VERSION` in the same file.",
+      });
+      setExportModalOpen(true);
     }
   };
   
@@ -238,6 +322,13 @@ const AdminDashboard: React.FC = () => {
   
   return (
     <div className="container mx-auto px-6 py-12 fade-in">
+      <ExportDataModal 
+        isOpen={exportModalOpen}
+        onClose={() => setExportModalOpen(false)}
+        title={exportData.title}
+        dataString={exportData.dataString}
+        instructions={exportData.instructions}
+      />
       <h1 className="text-4xl font-serif text-center mb-8">Admin Dashboard</h1>
       <div className="border-b border-gray-800 mb-8 flex justify-center flex-wrap">
         <button onClick={() => setActiveTab('products')} className={tabClasses('products')}>Products</button>
@@ -290,7 +381,7 @@ const AdminDashboard: React.FC = () => {
                 {products.map(p => (<div key={p.id} className="flex items-center justify-between bg-brand-dark p-4 border border-gray-800 rounded-lg">
                     <div className="flex items-center"><img src={p.image} alt={p.name} className="w-16 h-16 object-cover mr-4 rounded" onContextMenu={(e) => e.preventDefault()}/><div>
                         <p className="font-bold">{p.name} {p.isPreOrder && <span className="text-xs bg-brand-gold text-black px-2 py-0.5 rounded ml-2">PRE-ORDER</span>}</p>
-                        <p className="text-sm text-gray-400">{p.variants.map(v => `₹${v.price} (${v.size}) - Stock: ${v.stock}`).join(' / ')}</p>
+                        <p className="text-sm text-gray-400">{p.variants.map(v => `₹${v.discountedPrice ? v.discountedPrice : v.price} (${v.size}) - Stock: ${v.stock}`).join(' / ')}</p>
                     </div></div>
                     <div className="flex space-x-2"><button onClick={() => handleProductEdit(p)} className="bg-blue-600 text-white px-3 py-1 text-sm rounded">Edit</button><button onClick={() => handleProductDelete(p.id)} className="bg-red-600 text-white px-3 py-1 text-sm rounded">Delete</button></div>
                 </div>))}

@@ -1,5 +1,5 @@
 import { Product, BlogPost, User, Order, CartItem, WishlistItem, ContactSubmission, NewsletterSubscription } from '../types';
-import { mockProducts, mockBlogPosts } from './mockData';
+import { mockProducts, mockBlogPosts, DATA_VERSION } from './mockData';
 
 const get = <T,>(key: string, defaultValue: T): T => {
   try {
@@ -20,12 +20,25 @@ const set = <T,>(key: string, value: T): void => {
 };
 
 export const initData = () => {
-  if (!localStorage.getItem('products')) {
+  // FIX: Explicitly set the generic type to `number` to prevent TypeScript from inferring the literal type `0`, which caused a comparison error with the literal type `1` of `DATA_VERSION`.
+  const storedVersion = get<number>('dataVersion', 0);
+
+  if (storedVersion !== DATA_VERSION) {
+    // Version mismatch, update shared data from mock files
     set('products', mockProducts);
-  }
-  if (!localStorage.getItem('blogPosts')) {
     set('blogPosts', mockBlogPosts);
+    set('dataVersion', DATA_VERSION);
+  } else {
+    // On same version, ensure data exists from a first load if cache was cleared
+    if (!localStorage.getItem('products')) {
+      set('products', mockProducts);
+    }
+    if (!localStorage.getItem('blogPosts')) {
+      set('blogPosts', mockBlogPosts);
+    }
   }
+  
+  // User-specific data or data not part of versioning
   if(!localStorage.getItem('users')){
     set('users', [{email: 'velvetnocturne77@gmail.com', password: 'ASHU77111488', isAdmin: true}])
   }
