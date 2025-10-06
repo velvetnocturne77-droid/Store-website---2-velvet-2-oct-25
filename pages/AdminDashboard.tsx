@@ -164,12 +164,31 @@ const AdminDashboard: React.FC = () => {
   };
 
   // Blog Handlers
+  const handleBlogImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) { // 2MB limit
+          alert("File is too large. Please upload an image under 2MB.");
+          return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBlogFormData(prev => ({ ...prev, image: reader.result as string }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   const handleBlogInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setBlogFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
   const handleBlogSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!blogFormData.image) {
+        alert("Please upload an image for the blog post.");
+        return;
+    }
     let updatedPosts;
     if (isEditingBlog) {
       updatedPosts = blogPosts.map(p => p.id === isEditingBlog.id ? { ...blogFormData, date: new Date().toLocaleDateString() } : p);
@@ -285,7 +304,18 @@ const AdminDashboard: React.FC = () => {
                 <form onSubmit={handleBlogSubmit} className="space-y-4">
                     <input name="title" value={blogFormData.title} onChange={handleBlogInputChange} placeholder="Title" className="w-full bg-gray-800 p-2 border border-gray-600 rounded" required/>
                     <input name="author" value={blogFormData.author} onChange={handleBlogInputChange} placeholder="Author" className="w-full bg-gray-800 p-2 border border-gray-600 rounded" required/>
-                    <input name="image" value={blogFormData.image} onChange={handleBlogInputChange} placeholder="Image URL" className="w-full bg-gray-800 p-2 border border-gray-600 rounded" required/>
+                     <div>
+                      <label htmlFor="blog-image-upload" className="block text-sm font-medium text-gray-300 mb-1">Blog Post Image</label>
+                      {blogFormData.image && <img src={blogFormData.image} alt="Blog post preview" className="w-20 h-20 object-cover mb-2 rounded" onContextMenu={(e) => e.preventDefault()}/>}
+                      <input 
+                          id="blog-image-upload"
+                          type="file"
+                          name="image"
+                          accept="image/*"
+                          onChange={handleBlogImageUpload}
+                          className="w-full text-sm text-gray-400 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-brand-gold file:text-black hover:file:bg-brand-gold/90"
+                      />
+                    </div>
                     <textarea name="summary" value={blogFormData.summary} onChange={handleBlogInputChange} placeholder="Summary" className="w-full bg-gray-800 p-2 border border-gray-600 rounded" required/>
                     <textarea name="content" value={blogFormData.content} onChange={handleBlogInputChange} placeholder="Full Content" rows={5} className="w-full bg-gray-800 p-2 border border-gray-600 rounded" required/>
                     <button type="submit" className="w-full bg-brand-gold text-black py-2 font-bold uppercase tracking-wider">{isEditingBlog ? 'Update' : 'Create'} Post</button>
