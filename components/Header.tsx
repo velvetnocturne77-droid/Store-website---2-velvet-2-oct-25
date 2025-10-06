@@ -45,6 +45,9 @@ const Header: React.FC = () => {
             <NavLink to="/shop" className={navLinkClasses}>Shop</NavLink>
             <NavLink to="/blog" className={navLinkClasses}>Blog</NavLink>
             <NavLink to="/contact" className={navLinkClasses}>Contact</NavLink>
+            {currentUser && currentUser.isAdmin && (
+              <NavLink to="/admin" className={navLinkClasses}>Admin</NavLink>
+            )}
           </div>
           <div className="flex items-center space-x-5">
             <Link to="/wishlist" className="relative text-white hover:text-brand-gold transition-colors duration-300">
