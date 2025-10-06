@@ -27,7 +27,7 @@ export const mockProducts: Product[] = [
     id: 'auron-3', 
     name: '✨ Auron – The Power of Presence', 
     description: 'Auron is the memory of brilliance — the golden glow of dawn, the sparkle of ambition, the timeless presence of those who define their own path.\n\nFresh citrus awakens the senses, leading to velvety woods and florals, before settling into deep amber and musk. Neither masculine nor feminine, Auron is for the soul that belongs only to itself.\n\n✨ Auron – Because true luxury knows no gender.', 
-    image: 'https://i.imgur.com/5u0w3g4.jpeg',
+    image: 'https://i.imgur.com/MQDYGq3.jpeg',
     variants: [
       { id: 'auron-3-100', size: '100ml', price: 2100, discountedPrice: 1999, stock: 0 },
       { id: 'auron-3-50', size: '50ml', price: 1800, discountedPrice: 1699, stock: 0 },
