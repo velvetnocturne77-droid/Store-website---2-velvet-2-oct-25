@@ -38,7 +38,6 @@ declare global {
   }
 }
 
-
 const countries = ["United States","India", "Canada", "United Kingdom", "Australia", "Germany", "France", "Japan", "Brazil", "Mexico", "Spain", "Italy", "Afghanistan", "Albania", "Algeria", "Andorra", "Angola", "Argentina", "Armenia", "Austria", "Azerbaijan", "Bahamas", "Bahrain", "Bangladesh", "Barbados", "Belarus", "Belgium", "Belize", "Benin", "Bhutan", "Bolivia", "Bosnia and Herzegovina", "Botswana", "Brunei", "Bulgaria", "Burkina Faso", "Burundi", "Cambodia", "Cameroon", "Cape Verde", "Central African Republic", "Chad", "Chile", "China", "Colombia", "Comoros", "Congo", "Costa Rica", "Croatia", "Cuba", "Cyprus", "Czech Republic", "Denmark", "Djibouti", "Dominica", "Dominican Republic", "Ecuador", "Egypt", "El Salvador", "Equatorial Guinea", "Eritrea", "Estonia", "Ethiopia", "Fiji", "Finland", "Gabon", "Gambia", "Georgia", "Ghana", "Greece", "Grenada", "Guatemala", "Guinea", "Guinea-Bissau", "Guyana", "Haiti", "Honduras", "Hungary", "Iceland", "Indonesia", "Iran", "Iraq", "Ireland", "Israel", "Ivory Coast", "Jamaica", "Jordan", "Kazakhstan", "Kenya", "Kiribati", "Kuwait", "Kyrgyzstan", "Laos", "Latvia", "Lebanon", "Lesotho", "Liberia", "Libya", "Liechtenstein", "Lithuania", "Luxembourg", "Macedonia", "Madagascar", "Malawi", "Malaysia", "Maldives", "Mali", "Malta", "Marshall Islands", "Mauritania", "Mauritius", "Micronesia", "Moldova", "Monaco", "Mongolia", "Montenegro", "Morocco", "Mozambique", "Myanmar", "Namibia", "Nauru", "Nepal", "Netherlands", "New Zealand", "Nicaragua", "Niger", "Nigeria", "North Korea", "Norway", "Oman", "Pakistan", "Palau", "Panama", "Papua New Guinea", "Paraguay", "Peru", "Philippines", "Poland", "Portugal", "Qatar", "Romania", "Russia", "Rwanda", "Saint Kitts and Nevis", "Saint Lucia", "Saint Vincent and the Grenadines", "Samoa", "San Marino", "Sao Tome and Principe", "Saudi Arabia", "Senegal", "Serbia", "Seychelles", "Sierra Leone", "Singapore", "Slovakia", "Slovenia", "Solomon Islands", "Somalia", "South Africa", "South Korea", "South Sudan", "Sri Lanka", "Sudan", "Suriname", "Swaziland", "Sweden", "Switzerland", "Syria", "Taiwan", "Tajikistan", "Tanzania", "Thailand", "Timor-Leste", "Togo", "Tonga", "Trinidad and Tobago", "Tunisia", "Turkey", "Turkmenistan", "Tuvalu", "Uganda", "Ukraine", "United Arab Emirates", "Uruguay", "Uzbekistan", "Vanuatu", "Vatican City", "Venezuela", "Vietnam", "Yemen", "Zambia", "Zimbabwe"];
 
 const countryCodeMap: { [key: string]: string } = {
@@ -133,21 +132,29 @@ const CheckoutPage: React.FC = () => {
     setPaymentError('');
 
     try {
-      // Step 1: Create an order on the server
+      // STEP 1: Create Order by calling the backend API
       const orderResponse = await fetch('/api/order', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+        },
         body: JSON.stringify({ amount: cartTotal }),
       });
 
       if (!orderResponse.ok) {
-        const errorData = await orderResponse.json();
+        let errorData;
+        try {
+            errorData = await orderResponse.json();
+        } catch(e) {
+             throw new Error('Failed to create order. Server returned non-JSON response.');
+        }
         throw new Error(errorData.error || 'Failed to create order.');
       }
 
       const order = await orderResponse.json();
       
       const internalOrderId = `vn_${Date.now()}`;
+      // Use the live key provided by the user.
       const RAZORPAY_KEY_ID = 'rzp_live_RQSIbYCNQCd7AQ';
 
       const options: RazorpayOptions = {
@@ -160,20 +167,32 @@ const CheckoutPage: React.FC = () => {
         order_id: order.id,
         handler: async (response) => {
           try {
-            // Step 2: Verify the payment on the server
-            const verificationResponse = await fetch('/api/verify', {
+            // STEP 2: Verify Payment by calling the backend API
+            const verifyResponse = await fetch('/api/verify', {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: {
+                'Content-Type': 'application/json',
+              },
               body: JSON.stringify({
                 razorpay_order_id: response.razorpay_order_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
               }),
             });
+            
+            if (!verifyResponse.ok) {
+                let errorData;
+                try {
+                    errorData = await verifyResponse.json();
+                } catch(e) {
+                    throw new Error("Payment verification failed. Server returned non-JSON response.");
+                }
+                throw new Error(errorData.message || "Payment verification failed.");
+            }
 
-            const verificationResult = await verificationResponse.json();
+            const verificationResult = await verifyResponse.json();
 
-            if (verificationResponse.ok && verificationResult.success) {
+            if (verificationResult.success) {
               addOrder({
                 id: internalOrderId,
                 userId: currentUser.email,
@@ -188,9 +207,9 @@ const CheckoutPage: React.FC = () => {
             } else {
               setPaymentError(verificationResult.message || "Payment verification failed. Please contact support.");
             }
-          } catch (error) {
+          } catch (error: any) {
             console.error("Verification error:", error);
-            setPaymentError("An error occurred during payment verification. Please contact support.");
+            setPaymentError(error.message || "An error occurred during payment verification. Please contact support.");
           } finally {
             setIsProcessing(false);
           }
