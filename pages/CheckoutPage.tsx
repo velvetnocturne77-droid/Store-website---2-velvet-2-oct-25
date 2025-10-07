@@ -148,7 +148,7 @@ const CheckoutPage: React.FC = () => {
       const order = await orderResponse.json();
       
       const internalOrderId = `vn_${Date.now()}`;
-      const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
+      const RAZORPAY_KEY_ID = 'rzp_live_RQSIbYCNQCd7AQ';
 
       const options: RazorpayOptions = {
         key: RAZORPAY_KEY_ID,
