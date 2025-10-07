@@ -18,7 +18,7 @@ interface RazorpayOptions {
     contact: string;
   };
   notes: {
-    address: string;
+    [key: string]: string;
   };
   theme: {
     color: string;
@@ -132,6 +132,7 @@ const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
     setPaymentError('');
 
+    const internalOrderId = `vn_${Date.now()}`;
     const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
 
     const options: RazorpayOptions = {
@@ -147,6 +148,7 @@ const CheckoutPage: React.FC = () => {
         // we will treat the successful handler callback as a successful payment.
         // This is not secure for a production application but necessary for this environment.
         addOrder({
+          id: internalOrderId,
           userId: currentUser.email,
           items: cart,
           total: cartTotal,
@@ -165,6 +167,8 @@ const CheckoutPage: React.FC = () => {
       },
       notes: {
         address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.zip}, ${shippingInfo.country}`,
+        internal_order_id: internalOrderId,
+        items: cart.map(item => `${item.name} (${item.size}) x${item.quantity}`).join(' | '),
       },
       theme: {
         "color": "#D4AF37"

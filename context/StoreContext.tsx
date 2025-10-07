@@ -20,7 +20,7 @@ interface StoreContextType {
   logout: () => void;
   register: (user: User) => boolean;
   orders: Order[];
-  addOrder: (orderData: { userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => void;
+  addOrder: (orderData: { id: string; userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => void;
   updateUserAddress: (address: ShippingAddress) => void;
 }
 
@@ -142,7 +142,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     return true;
   };
 
-  const addOrder = (orderData: { userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => {
+  const addOrder = (orderData: { id: string; userId: string; items: CartItem[]; total: number; shippingAddress: ShippingAddress; razorpayPaymentId: string; razorpayOrderId: string; }) => {
     const allOrders = storage.getOrders();
     
     const totalValue = orderData.items.reduce((sum, item) => {
@@ -153,7 +153,7 @@ export const StoreProvider: React.FC<{ children: ReactNode }> = ({ children }) =
     const isPartiallyPaid = amountPaid < totalValue;
 
     const newOrder: Order = {
-      id: Date.now().toString(),
+      id: orderData.id,
       date: new Date().toISOString(),
       status: isPartiallyPaid ? 'Partially Paid' : 'Pending',
       statusNotes: isPartiallyPaid ? undefined : 'Will be confirmed under 24 hours and shipped in 14 days. You will be notified through WhatsApp and Call',
