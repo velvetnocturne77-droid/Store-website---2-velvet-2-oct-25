@@ -1,13 +1,13 @@
 import { Product, BlogPost } from '../types';
 
-export const DATA_VERSION = 3;
+export const DATA_VERSION = 4;
 
 export const mockProducts: Product[] = [
   { 
     id: 'velora-1', 
     name: '🌸 Velora – The Essence of Timeless Elegance Eau De Perfume', 
     description: 'Velora is the fragrance of memories wrapped in velvet whispers. It carries the grace of fleeting moments that stay forever etched in the heart — the laughter of a loved one, the touch of silk, the glow of a quiet evening.\n\nFloral blooms rise first, soft yet captivating, then melt into warm sensual notes before resting in a deep, lingering base. Velora is not just worn, it is remembered — like a memory that never fades.\n\n✨ Velora – Because elegance never shouts, it simply lingers.', 
-    image: 'https://i.imgur.com/qE6kL8w.jpeg', 
+    image: 'https://i.imgur.com/2R7Hrlt.png', 
     variants: [
       { id: 'velora-1-100', size: '100ml', price: 3500, discountedPrice: 2599, stock: 0 },
       { id: 'velora-1-50', size: '50ml', price: 2400, discountedPrice: 1799, stock: 0 },
@@ -17,9 +17,9 @@ export const mockProducts: Product[] = [
     id: 'draven-2', 
     name: '🖤 Draven – The Shadow of Elegance Signature Scent', 
     description: 'Draven is the memory of power, mystery, and allure. It recalls moments of strength — the echo of footsteps in silence, the warmth of a fire on a cold night, the magnetic presence that never goes unnoticed.\n\nThe fragrance strikes with sharp spice, deepens with smoky woods and leather, and rests in dark musks and oud. Every note is a memory of confidence and command.\n\n✨ Draven – Darkness never smelled this elegant.', 
-    image: 'https://i.imgur.com/yq5xV24.jpeg',
+    image: 'https://i.imgur.com/eqw9sgT.png',
     variants: [
-      { id: 'draven-2-100', size: '100ml', price: 3200, discountedPrice: 2399, stock: 5 },
+      { id: 'draven-2-100', size: '100ml', price: 3200, discountedPrice: 2499, stock: 5 },
       { id: 'draven-2-50', size: '50ml', price: 2300, discountedPrice: 1699, stock: 5 },
     ]
   },
@@ -27,7 +27,7 @@ export const mockProducts: Product[] = [
     id: 'auron-3', 
     name: '✨ Auron – The Power of Presence', 
     description: 'Auron is the memory of brilliance — the golden glow of dawn, the sparkle of ambition, the timeless presence of those who define their own path.\n\nFresh citrus awakens the senses, leading to velvety woods and florals, before settling into deep amber and musk. Neither masculine nor feminine, Auron is for the soul that belongs only to itself.\n\n✨ Auron – Because true luxury knows no gender.', 
-    image: 'https://i.imgur.com/5u0w3g4.jpeg',
+    image: 'https://i.imgur.com/9B5MkpA.jpeg',
     variants: [
       { id: 'auron-3-100', size: '100ml', price: 2100, discountedPrice: 1999, stock: 0 },
       { id: 'auron-3-50', size: '50ml', price: 1800, discountedPrice: 1699, stock: 0 },

@@ -132,62 +132,103 @@ const CheckoutPage: React.FC = () => {
     setIsProcessing(true);
     setPaymentError('');
 
-    const internalOrderId = `vn_${Date.now()}`;
-    const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
+    try {
+      // Step 1: Create an order on the server
+      const orderResponse = await fetch('/api/order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ amount: cartTotal }),
+      });
 
-    const options: RazorpayOptions = {
-      key: RAZORPAY_KEY_ID,
-      amount: Math.round(cartTotal * 100), // amount in the smallest currency unit (paise)
-      currency: 'INR',
-      name: "Velvet Nocturne",
-      description: "Luxury Perfume Order",
-      image: "https://picsum.photos/id/117/200/200",
-      // order_id is removed as we are not creating it on a server
-      handler: (response) => {
-        // Since we are not creating an order server-side and verifying,
-        // we will treat the successful handler callback as a successful payment.
-        // This is not secure for a production application but necessary for this environment.
-        addOrder({
-          id: internalOrderId,
-          userId: currentUser.email,
-          items: cart,
-          total: cartTotal,
-          shippingAddress: shippingInfo,
-          razorpayPaymentId: response.razorpay_payment_id,
-          razorpayOrderId: response.razorpay_order_id || `mock_order_${Date.now()}`,
-        });
-        alert("Payment successful! Your order has been placed.");
-        navigate('/account');
-        setIsProcessing(false);
-      },
-      prefill: {
-        name: shippingInfo.name,
-        email: currentUser.email,
-        contact: shippingInfo.phone,
-      },
-      notes: {
-        address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.zip}, ${shippingInfo.country}`,
-        internal_order_id: internalOrderId,
-        items: cart.map(item => `${item.name} (${item.size}) x${item.quantity}`).join(' | '),
-      },
-      theme: {
-        "color": "#D4AF37"
+      if (!orderResponse.ok) {
+        const errorData = await orderResponse.json();
+        throw new Error(errorData.error || 'Failed to create order.');
       }
-    };
-    
-    if (typeof window.Razorpay === 'undefined') {
-        setPaymentError('Razorpay SDK not loaded. Please check your internet connection.');
-        setIsProcessing(false);
-        return;
-    }
 
-    const paymentObject = new window.Razorpay(options);
-    paymentObject.on('payment.failed', (response: any) => {
-        setPaymentError(response.error.description || 'Payment failed. Please try again.');
-        console.error('Payment failed: ', response.error);
-        setIsProcessing(false);
-    });
-    paymentObject.open();
+      const order = await orderResponse.json();
+      
+      const internalOrderId = `vn_${Date.now()}`;
+      const RAZORPAY_KEY_ID = 'rzp_live_RPsjTFzVgC7q8e';
+
+      const options: RazorpayOptions = {
+        key: RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "Velvet Nocturne",
+        description: "Luxury Perfume Order",
+        image: "https://picsum.photos/id/117/200/200",
+        order_id: order.id,
+        handler: async (response) => {
+          try {
+            // Step 2: Verify the payment on the server
+            const verificationResponse = await fetch('/api/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                razorpay_order_id: response.razorpay_order_id,
+                razorpay_payment_id: response.razorpay_payment_id,
+                razorpay_signature: response.razorpay_signature,
+              }),
+            });
+
+            const verificationResult = await verificationResponse.json();
+
+            if (verificationResponse.ok && verificationResult.success) {
+              addOrder({
+                id: internalOrderId,
+                userId: currentUser.email,
+                items: cart,
+                total: cartTotal,
+                shippingAddress: shippingInfo,
+                razorpayPaymentId: response.razorpay_payment_id,
+                razorpayOrderId: response.razorpay_order_id!,
+              });
+              alert("Payment successful! Your order has been placed.");
+              navigate('/account');
+            } else {
+              setPaymentError(verificationResult.message || "Payment verification failed. Please contact support.");
+            }
+          } catch (error) {
+            console.error("Verification error:", error);
+            setPaymentError("An error occurred during payment verification. Please contact support.");
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        prefill: {
+          name: shippingInfo.name,
+          email: currentUser.email,
+          contact: shippingInfo.phone,
+        },
+        notes: {
+          address: `${shippingInfo.address}, ${shippingInfo.city}, ${shippingInfo.zip}, ${shippingInfo.country}`,
+          internal_order_id: internalOrderId,
+          items: cart.map(item => `${item.name} (${item.size}) x${item.quantity}`).join(' | '),
+        },
+        theme: {
+          "color": "#D4AF37"
+        }
+      };
+      
+      if (typeof window.Razorpay === 'undefined') {
+          setPaymentError('Razorpay SDK not loaded. Please check your internet connection.');
+          setIsProcessing(false);
+          return;
+      }
+
+      const paymentObject = new window.Razorpay(options);
+      paymentObject.on('payment.failed', (response: any) => {
+          setPaymentError(response.error.description || 'Payment failed. Please try again.');
+          console.error('Payment failed: ', response.error);
+          setIsProcessing(false);
+      });
+      paymentObject.open();
+
+    } catch (error: any) {
+      console.error("Order creation error:", error);
+      setPaymentError(error.message || "Could not initiate payment. Please try again.");
+      setIsProcessing(false);
+    }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
